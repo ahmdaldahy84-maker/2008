@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>واذكر ربك | تطبيق التسبيح والأذكار</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Amiri, Aref Ruqaa, Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                        amiri: ['Amiri', 'serif'],
+                        ruqaa: ['Aref Ruqaa', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        /* حركة الطفو الهادئة للدوائر الخمس */
+        @keyframes floatSlow1 {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.02); }
+        }
+        @keyframes floatSlow2 {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(7px) scale(1.02); }
+        }
+        @keyframes floatSlow3 {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-6px) scale(1.03); }
+        }
+
+        .float-1 { animation: floatSlow1 5.5s ease-in-out infinite; }
+        .float-2 { animation: floatSlow2 6.2s ease-in-out infinite; }
+        .float-3 { animation: floatSlow3 5.8s ease-in-out infinite; }
+
+        /* تصميم الدوائر الزجاجية المستوحاة من ألوان الخلفية الدافئة */
+        .orb-glass {
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .orb-glass:hover {
+            transform: scale(1.08) !important;
+        }
+        .orb-glass:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* تأثير نبض العداد عند التسبيح */
+        @keyframes counterPop {
+            0% { transform: scale(1); }
+            45% { transform: scale(1.24); }
+            100% { transform: scale(1); }
+        }
+        .counter-pop {
+            animation: counterPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* تأثير تموج اللمس في شاشة الريلز */
+        @keyframes tapRipple {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.85; }
+            100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+        }
+        .ripple-circle {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            background: radial-gradient(circle, rgba(255,255,255,0.28) 0%, transparent 70%);
+            pointer-events: none;
+            animation: tapRipple 0.65s ease-out forwards;
+            z-index: 30;
+        }
+
+        /* شريط تمرير مخصص لقائمة الإعدادات */
+        .drawer-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .drawer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-scroll::-webkit-scrollbar-thumb {
+            background: rgba(180, 130, 85, 0.4);
+            border-radius: 9999px;
+        }
+
+        /* انتقال شرائح الريلز */
+        .reel-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+        }
+        .reel-slide.dragging {
+            transition: none !important;
+        }
+    </style>
+</head>
+<body class="dark bg-[#14110e] text-amber-50">
+
+    <!-- =========================================================
+         1. الصفحة الرئيسية (Home View)
+    ========================================================== -->
+    <main id="home-view" class="relative w-full h-full flex flex-col justify-between overflow-hidden transition-opacity duration-500">
+        
+        <!-- خلفية الصفحة الرئيسية المولدة فنياً (طابع تراثي: غروب دافئ + قبة + نخيل + عبارة واذكر ربك إذا نسيت) -->
+        <div id="home-bg-layer" class="absolute inset-0 w-full h-full z-0">
+            <!-- صورة مخصصة إذا رفعها المستخدم -->
+            <img id="custom-home-bg-img" src="" alt="" class="hidden w-full h-full object-cover">
+            
+            <!-- المشهد التراثي الافتراضي المرسوم بـ SVG عالي الدقة -->
+            <svg id="default-home-svg" class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- تدرج السماء الدافئ في الوضع الداكن -->
+                    <linearGradient id="skyDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#2b1b12"/>
+                        <stop offset="32%" stop-color="#8c4e27"/>
+                        <stop offset="58%" stop-color="#c97b42"/>
+                        <stop offset="82%" stop-color="#293524"/>
+                        <stop offset="100%" stop-color="#0f170d"/>
+                    </linearGradient>
+                    <!-- تدرج السماء الدافئ في الوضع المضيء -->
+                    <linearGradient id="skyLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#f7d5b2"/>
+                        <stop offset="35%" stop-color="#e59b5c"/>
+                        <stop offset="62%" stop-color="#c4713b"/>
+                        <stop offset="85%" stop-color="#45593b"/>
+                        <stop offset="100%" stop-color="#1e2b18"/>
+                    </linearGradient>
+                    <radialGradient id="sunGlow" cx="50%" cy="46%" r="42%">
+                        <stop offset="0%" stop-color="#ffe7c2" stop-opacity="0.55"/>
+                        <stop offset="60%" stop-color="#e8944a" stop-opacity="0.18"/>
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+
+                <!-- الخلفية الأساسية -->
+                <rect id="home-sky-rect" width="800" height="1400" fill="url(#skyDark)"/>
+                <circle cx="400" cy="640" r="420" fill="url(#sunGlow)"/>
+
+                <!-- المبنى التراثي والقبة في المنتصف -->
+                <g opacity="0.88" fill="#1e1510">
+                    <!-- القبة الرئيسية -->
+                    <path d="M 275 760 C 275 630, 400 570, 400 535 C 400 570, 525 630, 525 760 Z" fill="#281b14"/>
+                    <rect x="396" y="495" width="8" height="45" fill="#281b14"/>
+                    <circle cx="400" cy="492" r="7" fill="#d99b52"/>
+                    <!-- قباب جانبية صغيرة -->
+                    <path d="M 185 800 C 185 745, 225 720, 225 705 C 225 720, 265 745, 265 800 Z" fill="#231711"/>
+                    <path d="M 535 800 C 535 745, 575 720, 575 705 C 575 720, 615 745, 615 800 Z" fill="#231711"/>
+                    <!-- واجهة القصر / المسجد -->
+                    <rect x="130" y="760" width="540" height="340" rx="6" fill="#221610"/>
+                    <rect x="115" y="752" width="570" height="14" rx="4" fill="#362419"/>
+                    <!-- القوس المركزي الكبير -->
+                    <path d="M 335 1100 L 335 885 Q 400 815 465 885 L 465 1100 Z" fill="#140d09"/>
+                    <path d="M 345 1100 L 345 892 Q 400 830 455 892 L 455 1100 Z" fill="none" stroke="#a66838" stroke-width="3" opacity="0.6"/>
+                    <!-- أقواس جانبية -->
+                    <path d="M 180 1100 L 180 920 Q 225 870 270 920 L 270 1100 Z" fill="#140d09"/>
+                    <path d="M 530 1100 L 530 920 Q 575 870 620 920 L 620 1100 Z" fill="#140d09"/>
+                    <!-- نوافذ علوية مزخرفة -->
+                    <path d="M 195 855 L 195 805 Q 225 780 255 805 L 255 855 Z" fill="#3a261a"/>
+                    <path d="M 545 855 L 545 805 Q 575 780 605 805 L 605 855 Z" fill="#3a261a"/>
+                </g>
+
+                <!-- أشجار النخيل الباسقة على الجانبين -->
+                <g fill="#0e120c">
+                    <!-- نخلة يمنى طويلة -->
+                    <path d="M 655 1140 Q 640 720 615 310 L 628 310 Q 655 720 672 1140 Z"/>
+                    <g transform="translate(621, 315)">
+                        <path d="M0,0 Q-95,-45 -165,25 Q-90,-10 0,8 Z"/>
+                        <path d="M0,0 Q-75,-95 -135,-75 Q-70,-55 0,5 Z"/>
+                        <path d="M0,0 Q0,-115 -35,-135 Q5,-65 5,0 Z"/>
+                        <path d="M0,0 Q80,-90 140,-60 Q70,-45 0,5 Z"/>
+                        <path d="M0,0 Q105,-35 160,35 Q85,-5 0,8 Z"/>
+                        <path d="M0,0 Q75,35 110,95 Q55,35 0,10 Z"/>
+                        <path d="M0,0 Q-75,40 -115,95 Q-55,35 0,10 Z"/>
+                    </g>
+
+                    <!-- نخلة يسرى -->
+                    <path d="M 140 1140 Q 155 780 175 450 L 186 450 Q 168 780 155 1140 Z"/>
+                    <g transform="translate(180, 455) scale(0.88)">
+                        <path d="M0,0 Q-95,-45 -165,25 Q-90,-10 0,8 Z"/>
+                        <path d="M0,0 Q-75,-95 -135,-75 Q-70,-55 0,5 Z"/>
+                        <path d="M0,0 Q0,-115 -35,-135 Q5,-65 5,0 Z"/>
+                        <path d="M0,0 Q80,-90 140,-60 Q70,-45 0,5 Z"/>
+                        <path d="M0,0 Q105,-35 160,35 Q85,-5 0,8 Z"/>
+                    </g>
+
+                    <!-- نخلة خلفية صغيرة -->
+                    <path d="M 735 1140 Q 725 850 715 560 L 723 560 Q 735 850 745 1140 Z" opacity="0.85"/>
+                    <g transform="translate(719, 562) scale(0.68)" opacity="0.85">
+                        <path d="M0,0 Q-95,-45 -165,25 Q-90,-10 0,8 Z"/>
+                        <path d="M0,0 Q-75,-95 -135,-75 Q-70,-55 0,5 Z"/>
+                        <path d="M0,0 Q80,-90 140,-60 Q70,-45 0,5 Z"/>
+                        <path d="M0,0 Q105,-35 160,35 Q85,-5 0,8 Z"/>
+                    </g>
+                </g>
+
+                <!-- الحديقة الخضراء في الأسفل -->
+                <path d="M 0 1090 Q 400 1065 800 1090 L 800 1400 L 0 1400 Z" fill="#162412"/>
+                <path d="M 0 1135 Q 400 1115 800 1135 L 800 1400 L 0 1400 Z" fill="#0e180b"/>
+            </svg>
+
+            <!-- طبقة تظليل ناعمة لضمان وضوح النص والدوائر العائمة -->
+            <div id="home-overlay-tint" class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/20 to-black/65 transition-colors duration-500"></div>
+        </div>
+
+        <!-- الشريط العلوي: اسم التطبيق + زر الثلاث شرطات في الزاوية العلوية اليمنى -->
+        <header class="relative z-20 w-full px-5 pt-5 pb-2 flex items-center justify-between">
+            <!-- أيقونة الثلاث شرطات الصغيرة في الزاوية العلوية اليمنى -->
+            <button onclick="toggleDrawer(true)" aria-label="الإعدادات"
+                class="group flex flex-col items-center justify-center gap-1.5 w-11 h-11 rounded-2xl bg-amber-950/45 hover:bg-amber-900/65 dark:bg-black/40 dark:hover:bg-black/60 backdrop-blur-md border border-amber-200/30 shadow-lg transition active:scale-90">
+                <span class="w-5 h-0.5 bg-amber-50 rounded-full transition-all group-hover:w-6"></span>
+                <span class="w-4 h-0.5 bg-amber-200 rounded-full transition-all group-hover:w-6"></span>
+                <span class="w-5 h-0.5 bg-amber-50 rounded-full transition-all group-hover:w-6"></span>
+            </button>
+
+            <!-- شارة إجمالي التسبيحات الكلي -->
+            <div onclick="toggleDrawer(true)" class="cursor-pointer flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-amber-200/25 text-amber-100 text-xs font-bold shadow-md hover:bg-black/50 transition">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-300"></i>
+                <span>مجموع الذكر:</span>
+                <span id="home-total-count" class="text-amber-300 text-sm font-extrabold">0</span>
+            </div>
+        </header>
+
+        <!-- عنوان التطبيق والآية الكريمة في الأعلى/الوسط -->
+        <div class="relative z-10 text-center px-4 mt-1 sm:mt-2 pointer-events-none">
+            <p class="text-xs sm:text-sm tracking-widest text-amber-200/90 font-medium mb-1 drop-shadow">تطبيق التسبيح والأذكار</p>
+            <h1 class="font-ruqaa text-4xl sm:text-5xl md:text-6xl text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.65)] leading-relaxed">
+                وَاذْكُر رَّبَّكَ إِذَا نَسِيتَ
+            </h1>
+        </div>
+
+        <!-- الدوائر الخمس العائمة بتوزيع هندسي متناغم -->
+        <section class="relative z-20 flex-1 flex flex-col items-center justify-center px-4 pb-6 max-w-lg w-full mx-auto">
+            
+            <!-- الصف العلوي: دائرتان (الحمد - الحوقلة) -->
+            <div class="w-full flex items-center justify-around gap-4 mb-3 sm:mb-5">
+                <!-- 1. الحمد -->
+                <button onclick="openCategory('hamd')" class="orb-glass float-1 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-500/30 via-orange-900/40 to-stone-950/60 border-2 border-amber-200/45 shadow-[0_12px_32px_rgba(0,0,0,0.45)] text-white group">
+                    <div class="absolute inset-1.5 rounded-full border border-amber-100/20 pointer-events-none"></div>
+                    <span class="font-amiri font-bold text-2xl sm:text-3xl tracking-wide drop-shadow">الحمد</span>
+                    <span id="badge-hamd" class="mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-black/35 text-amber-200 border border-amber-200/20">0</span>
+                </button>
+
+                <!-- 2. الحوقلة -->
+                <button onclick="openCategory('hawqala')" class="orb-glass float-2 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-500/30 via-orange-900/40 to-stone-950/60 border-2 border-amber-200/45 shadow-[0_12px_32px_rgba(0,0,0,0.45)] text-white group">
+                    <div class="absolute inset-1.5 rounded-full border border-amber-100/20 pointer-events-none"></div>
+                    <span class="font-amiri font-bold text-2xl sm:text-3xl tracking-wide drop-shadow">الحوقلة</span>
+                    <span id="badge-hawqala" class="mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-black/35 text-amber-200 border border-amber-200/20">0</span>
+                </button>
+            </div>
+
+            <!-- الصف الأوسط: دائرة مركزية مميزة (التكبير) -->
+            <div class="w-full flex items-center justify-center my-1">
+                <!-- 3. التكبير -->
+                <button onclick="openCategory('takbir')" class="orb-glass float-3 relative w-32 h-32 sm:w-36 sm:h-36 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-400/35 via-amber-800/45 to-emerald-950/65 border-2 border-amber-200/60 shadow-[0_16px_40px_rgba(0,0,0,0.55)] text-white group">
+                    <div class="absolute inset-1.5 rounded-full border border-amber-100/30 pointer-events-none"></div>
+                    <span class="font-amiri font-bold text-3xl sm:text-4xl tracking-wide drop-shadow">التكبير</span>
+                    <span id="badge-takbir" class="mt-1 text-xs font-bold px-3 py-0.5 rounded-full bg-black/40 text-amber-200 border border-amber-200/25">0</span>
+                </button>
+            </div>
+
+            <!-- الصف السفلي: دائرتان (الاستغفار - أذكار متنوعة) -->
+            <div class="w-full flex items-center justify-around gap-4 mt-3 sm:mt-5">
+                <!-- 4. الاستغفار -->
+                <button onclick="openCategory('istighfar')" class="orb-glass float-2 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-700/35 via-stone-900/45 to-amber-950/60 border-2 border-amber-200/45 shadow-[0_12px_32px_rgba(0,0,0,0.45)] text-white group">
+                    <div class="absolute inset-1.5 rounded-full border border-amber-100/20 pointer-events-none"></div>
+                    <span class="font-amiri font-bold text-2xl sm:text-3xl tracking-wide drop-shadow">الاستغفار</span>
+                    <span id="badge-istighfar" class="mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-black/35 text-amber-200 border border-amber-200/20">0</span>
+                </button>
+
+                <!-- 5. أذكار متنوعة -->
+                <button onclick="openCategory('adhkar')" class="orb-glass float-1 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-700/35 via-stone-900/45 to-amber-950/60 border-2 border-amber-200/45 shadow-[0_12px_32px_rgba(0,0,0,0.45)] text-white px-2 text-center group">
+                    <div class="absolute inset-1.5 rounded-full border border-amber-100/20 pointer-events-none"></div>
+                    <span class="font-amiri font-bold text-xl sm:text-2xl leading-tight drop-shadow">أذكار<br>متنوعة</span>
+                    <span id="badge-adhkar" class="mt-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-black/35 text-amber-200 border border-amber-200/20">0</span>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- تلميح هادئ في أسفل الصفحة الرئيسية -->
+        <footer class="relative z-10 text-center pb-4 px-4 pointer-events-none">
+            <p class="text-xs text-amber-100/75 font-medium">اختر دائرة الذكر وابدأ بالتمرير للأعلى كـ Reels للتسبيح</p>
+        </footer>
+    </main>
+
+
+    <!-- =========================================================
+         2. شاشة الريلز التفاعلية (Reels View - Infinite Loop)
+    ========================================================== -->
+    <section id="reels-view" class="fixed inset-0 z-40 hidden bg-black overflow-hidden">
+        
+        <!-- حاوية الشرائح المتحركة (تعمل بنظام الحلقة اللانهائية Loop) -->
+        <div id="reels-stage" class="relative w-full h-full overflow-hidden touch-none">
+            <!-- يتم حقن الشريحة السابقة والحالية والتالية هنا برمجياً لضمان سلاسة السحب والـ Loop -->
+        </div>
+
+        <!-- الشريط العلوي الشفاف فوق الريلز -->
+        <div class="absolute top-0 inset-x-0 z-30 p-4 sm:p-6 flex items-start justify-between pointer-events-none bg-gradient-to-b from-black/60 via-black/25 to-transparent">
+            
+            <!-- الزاوية العلوية اليمنى: زر الرجوع + اسم القسم -->
+            <div class="flex items-center gap-3 pointer-events-auto">
+                <button onclick="closeReels()" aria-label="العودة للرئيسية"
+                    class="w-11 h-11 rounded-2xl bg-black/40 hover:bg-black/65 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg transition active:scale-90">
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+                <div class="px-3.5 py-1.5 rounded-2xl bg-black/35 backdrop-blur-md border border-white/20">
+                    <h2 id="reels-category-title" class="font-amiri font-bold text-xl text-white leading-none">الحمد</h2>
+                    <span id="reels-slide-indicator" class="text-[11px] text-amber-200/90 font-medium">1 / 5</span>
+                </div>
+            </div>
+
+            <!-- الزاوية العلوية اليسرى: عداد التسبيح التفاعلي -->
+            <div class="pointer-events-auto flex flex-col items-end gap-2">
+                <div id="reels-counter-box" onclick="incrementCurrentCounter()" title="اضغط لزيادة العداد"
+                    class="cursor-pointer flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-black/45 hover:bg-black/65 backdrop-blur-md border border-amber-300/40 shadow-[0_8px_24px_rgba(0,0,0,0.45)] transition active:scale-95">
+                    <div class="text-left">
+                        <span class="block text-[10px] text-amber-200/90 font-bold tracking-wide">عدد التسبيحات</span>
+                        <span id="reels-counter-value" class="block text-2xl sm:text-3xl font-extrabold text-white leading-none mt-0.5 tabular-nums">0</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/30 border border-amber-300/40 flex items-center justify-center text-amber-200">
+                        <i data-lucide="fingerprint" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <!-- زر تصفير عداد هذا القسم فقط -->
+                <button onclick="resetCurrentCategoryCounter()" class="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-black/35 hover:bg-rose-950/70 text-white/80 hover:text-rose-200 backdrop-blur-md border border-white/15 transition flex items-center gap-1">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span>تصفير</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- أزرار مساعدة للتنقل على الحاسوب وتلميح السحب في الأسفل -->
+        <div class="absolute bottom-5 inset-x-0 z-30 px-5 flex items-center justify-between pointer-events-none">
+            <div class="mx-auto flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white/90 text-xs font-medium pointer-events-auto">
+                <i data-lucide="chevrons-up" class="w-4 h-4 text-amber-300 animate-bounce"></i>
+                <span>اسحب للأعلى أو انقر للتسبيح (تكرار مستمر)</span>
+            </div>
+
+            <!-- أزرار أسهم جانبية لسهولة الاستخدام بالماوس على الكمبيوتر -->
+            <div class="hidden sm:flex flex-col gap-2 pointer-events-auto">
+                <button onclick="navigateReel(-1)" class="w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 backdrop-blur-md border border-white/25 text-white flex items-center justify-center transition" title="السابق">
+                    <i data-lucide="chevron-up" class="w-5 h-5"></i>
+                </button>
+                <button onclick="navigateReel(1)" class="w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 backdrop-blur-md border border-white/25 text-white flex items-center justify-center transition" title="التالي">
+                    <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================================
+         3. شريط الإعدادات ولوحة التحكم الجانبية (Settings & Admin Drawer)
+    ========================================================== -->
+    <div id="drawer-backdrop" onclick="toggleDrawer(false)" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"></div>
+    
+    <aside id="settings-drawer" class="fixed top-0 right-0 z-50 h-full w-80 sm:w-96 max-w-[90vw] bg-[#1e1712] dark:bg-[#1e1712] text-amber-50 border-l border-amber-500/20 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+        
+        <!-- رأس القائمة الجانبية -->
+        <div class="p-5 border-b border-amber-500/20 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-amber-600/25 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                    <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base">الإعدادات والتحكم</h3>
+                    <p class="text-[11px] opacity-70">تخصيص المظهر، العدادات، والأذكار</p>
+                </div>
+            </div>
+            <button onclick="toggleDrawer(false)" class="p-2 rounded-xl hover:bg-amber-500/15 transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- محتوى القائمة القابل للتمرير -->
+        <div class="flex-1 overflow-y-auto drawer-scroll p-5 space-y-6">
+            
+            <!-- 1. التحكم بالمظهر (داكن / مضيء) -->
+            <div class="space-y-2.5">
+                <label class="text-xs font-bold opacity-80 flex items-center gap-1.5">
+                    <i data-lucide="sun-moon" class="w-4 h-4 text-amber-400"></i>
+                    <span>مظهر التطبيق (الألوان البصرية)</span>
+                </label>
+                <div class="grid grid-cols-2 gap-2.5 p-1.5 rounded-2xl bg-black/25 border border-amber-500/20">
+                    <button id="theme-dark-btn" onclick="setTheme('dark')" class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-amber-700 text-white shadow transition">
+                        <i data-lucide="moon" class="w-4 h-4"></i>
+                        <span>الوضع الداكن</span>
+                    </button>
+                    <button id="theme-light-btn" onclick="setTheme('light')" class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold opacity-75 hover:opacity-100 transition">
+                        <i data-lucide="sun" class="w-4 h-4"></i>
+                        <span>الوضع المضيء</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. إحصائيات التسبيح لجميع الدوائر -->
+            <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold opacity-80 flex items-center gap-1.5">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-400"></i>
+                        <span>سجل التسبيحات</span>
+                    </label>
+                    <button onclick="resetAllCounters()" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 underline">
+                        تصفير الكل
+                    </button>
+                </div>
+                <div id="drawer-stats-list" class="space-y-2 bg-black/20 p-3.5 rounded-2xl border border-amber-500/15 text-xs">
+                    <!-- يتم تعبئتها برمجياً -->
+                </div>
+            </div>
+
+            <!-- 3. لوحة التعديل المدمجة (تخصيص الخلفية أو إضافة ذكر جديد) -->
+            <div class="space-y-3 pt-2 border-t border-amber-500/20">
+                <label class="text-xs font-bold opacity-80 flex items-center gap-1.5">
+                    <i data-lucide="wand-2" class="w-4 h-4 text-amber-400"></i>
+                    <span>تخصيص المحتوى والصور</span>
+                </label>
+
+                <!-- رفع صورة خلفية مخصصة للصفحة الرئيسية -->
+                <div class="p-3.5 rounded-2xl bg-black/20 border border-amber-500/15 space-y-2">
+                    <p class="text-xs font-bold">خلفية الصفحة الرئيسية</p>
+                    <div class="flex items-center gap-2">
+                        <label class="flex-1 cursor-pointer flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-600/30 hover:bg-amber-600/45 border border-amber-400/30 text-xs font-bold transition">
+                            <i data-lucide="image-plus" class="w-4 h-4"></i>
+                            <span>تغيير الصورة</span>
+                            <input type="file" accept="image/*" onchange="uploadHomeBackground(event)" class="hidden">
+                        </label>
+                        <button id="reset-home-bg-btn" onclick="resetHomeBackground()" class="hidden py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-300 text-xs font-bold transition" title="استعادة الخلفية الأصلية">
+                            استعادة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- إضافة بطاقة ذكر جديدة أو صورة مخصصة لأي دائرة -->
+                <form onsubmit="addCustomReelSlide(event)" class="p-3.5 rounded-2xl bg-black/20 border border-amber-500/15 space-y-3">
+                    <p class="text-xs font-bold">إضافة بطاقة / صورة لداخل دائرة</p>
+                    
+                    <div>
+                        <label class="block text-[11px] opacity-75 mb-1">اختر الدائرة:</label>
+                        <select id="custom-slide-cat" class="w-full px-3 py-2 rounded-xl bg-black/35 border border-amber-500/25 text-xs font-bold focus:outline-none">
+                            <option value="hamd">1. الحمد</option>
+                            <option value="hawqala">2. الحوقلة</option>
+                            <option value="takbir">3. التكبير</option>
+                            <option value="istighfar">4. الاستغفار</option>
+                            <option value="adhkar">5. أذكار متنوعة</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] opacity-75 mb-1">نص الذكر (اختياري إذا كانت الصورة تحتوي نصاً):</label>
+                        <input type="text" id="custom-slide-text" placeholder="مثال: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ" class="w-full px-3 py-2 rounded-xl bg-black/35 border border-amber-500/25 text-xs focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] opacity-75 mb-1">ارفع صورة الخلفية من جهازك (اختياري):</label>
+                        <input type="file" id="custom-slide-image" accept="image/*" class="w-full text-[11px] file:ml-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-600/35 file:text-amber-100 hover:file:bg-amber-600/50 cursor-pointer">
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition active:scale-95">
+                        إضافة إلى الريلز
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- تذييل القائمة -->
+        <div class="p-4 border-t border-amber-500/20 text-center text-[11px] opacity-65">
+            تطبيق واذكر ربك • صدقة جارية
+        </div>
+    </aside>
+
+    <!-- إشعار منبثق لطيف (Toast) -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-stone-900/95 text-amber-100 border border-amber-400/30 text-xs font-bold shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform translate-y-4">
+        <span id="toast-msg">تم الحفظ</span>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. قاعدة البيانات الفنية للأقسام الخمسة (صور طبيعية مولدة بـ SVG + خطوط عربية)
+        // =========================================================================
+        const STORAGE_COUNTS_KEY = 'wadhkur_counts_v1';
+        const STORAGE_CUSTOM_SLIDES_KEY = 'wadhkur_custom_slides_v1';
+        const STORAGE_HOME_BG_KEY = 'wadhkur_home_bg_v1';
+        const STORAGE_THEME_KEY = 'wadhkur_theme_v1';
+
+        const CATEGORIES_META = {
+            hamd: { title: 'الحمد', order: 1 },
+            hawqala: { title: 'الحوقلة', order: 2 },
+            takbir: { title: 'التكبير', order: 3 },
+            istighfar: { title: 'الاستغفار', order: 4 },
+            adhkar: { title: 'أذكار متنوعة', order: 5 }
+        };
+
+        // مولد خلفيات طبيعية وروحانية فنية مطابقة تماماً لأجواء الصور المرسلة
+        function createScenicArt(type) {
+            switch (type) {
+                // --- خلفيات الحمد ---
+                case 'moon_bridge':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="mbSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#141821"/><stop offset="45%" stop-color="#4a3222"/><stop offset="100%" stop-color="#0d0b0a"/>
+                            </linearGradient>
+                            <radialGradient id="fullMoon" cx="50%" cy="22%" r="28%">
+                                <stop offset="0%" stop-color="#fff2d6"/><stop offset="35%" stop-color="#f3a857"/><stop offset="100%" stop-color="#f3a857" stop-opacity="0"/>
+                            </radialGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#mbSky)"/>
+                        <circle cx="400" cy="300" r="240" fill="url(#fullMoon)"/>
+                        <circle cx="400" cy="270" r="95" fill="#ffdfaa" opacity="0.92"/>
+                        <!-- أشجار غابة داكنة -->
+                        <path d="M0,0 L240,0 Q180,450 120,900 L0,900 Z" fill="#0e110e"/>
+                        <path d="M800,0 L560,0 Q620,450 680,900 L800,900 Z" fill="#0e110e"/>
+                        <!-- الجسر الخشبي المضيء -->
+                        <polygon points="340,760 460,760 660,1400 140,1400" fill="#593118"/>
+                        <polygon points="355,760 445,760 610,1400 190,1400" fill="#8f4f24"/>
+                        <line x1="340" y1="760" x2="140" y2="1400" stroke="#c97a40" stroke-width="8"/>
+                        <line x1="460" y1="760" x2="660" y2="1400" stroke="#c97a40" stroke-width="8"/>
+                    </svg>`;
+
+                case 'misty_tree':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="mtSky" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#f3efe2"/><stop offset="55%" stop-color="#b8c4b4"/><stop offset="100%" stop-color="#3c4d3e"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#mtSky)"/>
+                        <!-- جبال ضبابية -->
+                        <path d="M0,880 Q250,740 500,860 T800,820 L800,1400 L0,1400 Z" fill="#5c7060" opacity="0.65"/>
+                        <path d="M0,980 Q380,820 800,960 L800,1400 L0,1400 Z" fill="#1e2920"/>
+                        <!-- شجرة منفردة على القمة -->
+                        <rect x="393" y="790" width="14" height="115" fill="#161f18"/>
+                        <circle cx="400" cy="755" r="68" fill="#1b261d"/>
+                        <circle cx="355" cy="775" r="45" fill="#162118"/>
+                        <circle cx="445" cy="775" r="45" fill="#162118"/>
+                    </svg>`;
+
+                case 'sunrise_sea':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="ssSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#6b7a89"/><stop offset="48%" stop-color="#e8b88a"/><stop offset="52%" stop-color="#1f2933"/><stop offset="100%" stop-color="#0d131a"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#ssSky)"/>
+                        <circle cx="260" cy="590" r="48" fill="#fff7d6"/>
+                        <ellipse cx="260" cy="850" rx="90" ry="180" fill="#e8b88a" opacity="0.22"/>
+                    </svg>`;
+
+                case 'marble_dome':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="mdSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#4e6b66"/><stop offset="65%" stop-color="#9aa899"/><stop offset="100%" stop-color="#4a4238"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#mdSky)"/>
+                        <!-- قبة رخامية بيضاء في الأسفل -->
+                        <path d="M220,1150 C220,970 400,890 400,840 C400,890 580,970 580,1150 Z" fill="#dfd7c8"/>
+                        <rect x="396" y="785" width="8" height="60" fill="#c7bba8"/>
+                        <rect x="140" y="1150" width="520" height="250" fill="#cfc5b4"/>
+                        <path d="M330,1400 L330,1230 Q400,1170 470,1230 L470,1400 Z" fill="#595045"/>
+                    </svg>`;
+
+                // --- خلفيات الحوقلة ---
+                case 'snow_mountains':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="smSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#0d131a"/><stop offset="60%" stop-color="#1e2936"/><stop offset="100%" stop-color="#0a0e12"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#smSky)"/>
+                        <polygon points="0,950 280,680 560,980 800,760 800,1400 0,1400" fill="#18222c"/>
+                        <polygon points="280,680 210,760 265,785 315,750 365,795" fill="#cbd5e1" opacity="0.7"/>
+                        <polygon points="0,1100 480,820 800,1080 800,1400 0,1400" fill="#0f161d"/>
+                        <polygon points="480,820 400,900 465,925 535,890" fill="#94a3b8" opacity="0.6"/>
+                    </svg>`;
+
+                case 'dark_highway':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="dhSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#07090c"/><stop offset="52%" stop-color="#2c353d"/><stop offset="100%" stop-color="#11161b"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#dhSky)"/>
+                        <polygon points="0,680 360,820 0,920" fill="#161b20"/>
+                        <polygon points="800,660 440,820 800,920" fill="#161b20"/>
+                        <!-- الطريق الممتد -->
+                        <polygon points="392,820 408,820 680,1400 120,1400" fill="#1e293b"/>
+                        <line x1="400" y1="825" x2="400" y2="1400" stroke="#eab308" stroke-width="6" stroke-dasharray="28,24"/>
+                    </svg>`;
+
+                case 'sunset_horizon':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="shSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1b1926"/><stop offset="55%" stop-color="#59413e"/><stop offset="76%" stop-color="#d98a4e"/><stop offset="100%" stop-color="#1a1617"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#shSky)"/>
+                        <path d="M0,960 Q220,830 460,970 T800,940 L800,1100 L0,1100 Z" fill="#141114"/>
+                    </svg>`;
+
+                case 'night_railway':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <rect width="800" height="1400" fill="#090a0d"/>
+                        <ellipse cx="400" cy="960" rx="450" ry="140" fill="#78350f" opacity="0.35"/>
+                        <polygon points="394,860 406,860 560,1400 240,1400" fill="#1c1917"/>
+                        <line x1="395" y1="860" x2="265" y2="1400" stroke="#94a3b8" stroke-width="5"/>
+                        <line x1="405" y1="860" x2="535" y2="1400" stroke="#94a3b8" stroke-width="5"/>
+                        <!-- نجوم -->
+                        <circle cx="180" cy="220" r="2" fill="#fff"/><circle cx="620" cy="180" r="2.5" fill="#fff"/><circle cx="510" cy="340" r="1.8" fill="#fff"/><circle cx="290" cy="390" r="2" fill="#fff"/>
+                    </svg>`;
+
+                // --- خلفيات التكبير ---
+                case 'violet_peak':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="vpSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#0284c7"/><stop offset="48%" stop-color="#c084fc"/><stop offset="100%" stop-color="#1e1b4b"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#vpSky)"/>
+                        <polygon points="400,620 120,1120 680,1120" fill="#1e3a8a"/>
+                        <polygon points="400,620 270,850 350,820 400,880 460,810 530,850" fill="#e0f2fe"/>
+                        <polygon points="0,1040 320,920 800,1120 800,1400 0,1400" fill="#0f172a"/>
+                    </svg>`;
+
+                case 'starry_ridge':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="srSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#172536"/><stop offset="75%" stop-color="#3b526b"/><stop offset="100%" stop-color="#090d14"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#srSky)"/>
+                        <polygon points="0,1180 260,1040 480,1130 680,1020 800,1120 800,1400 0,1400" fill="#0f172a"/>
+                        <polygon points="260,1040 210,1090 275,1105 320,1080" fill="#f8fafc" opacity="0.85"/>
+                        <polygon points="680,1020 620,1075 685,1090 735,1065" fill="#f8fafc" opacity="0.85"/>
+                        <circle cx="210" cy="240" r="2" fill="#fff"/><circle cx="590" cy="310" r="2" fill="#fff"/><circle cx="430" cy="170" r="2.5" fill="#fff"/>
+                    </svg>`;
+
+                case 'emerald_canyon':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <rect width="800" height="1400" fill="#2d4732"/>
+                        <path d="M0,0 L340,0 Q240,650 310,1150 L0,1150 Z" fill="#141f16"/>
+                        <path d="M800,0 L480,0 Q580,650 510,1150 L800,1150 Z" fill="#18241a"/>
+                        <rect x="0" y="1120" width="800" height="280" fill="#1b4332"/>
+                    </svg>`;
+
+                case 'turquoise_cliff':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="tcSea" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#0284c7"/><stop offset="60%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#a8a29e"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#tcSea)"/>
+                        <polygon points="0,850 480,980 800,1220 800,1400 0,1400" fill="#78716c"/>
+                        <polygon points="0,950 380,1120 650,1400 0,1400" fill="#57534e"/>
+                    </svg>`;
+
+                // --- خلفيات الاستغفار ---
+                case 'river_bridge':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="rbWater" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0369a1"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#rbWater)"/>
+                        <path d="M180,0 Q420,250 340,480 Q240,560 460,520 Q640,340 580,0 Z" fill="#3f6212"/>
+                        <path d="M160,1400 Q240,980 410,940 Q560,980 540,1400 Z" fill="#4d7c0f"/>
+                        <path d="M435,0 Q370,700 425,1400" stroke="#e7e5e4" stroke-width="26" fill="none"/>
+                    </svg>`;
+
+                case 'calm_blue_sea':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="cbsSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#7dd3fc"/><stop offset="58%" stop-color="#bae6fd"/><stop offset="59%" stop-color="#0284c7"/><stop offset="100%" stop-color="#0c4a6e"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#cbsSky)"/>
+                    </svg>`;
+
+                case 'milky_way_beach':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <rect width="800" height="1400" fill="#090d16"/>
+                        <path d="M260,0 Q420,450 380,900" stroke="#94a3b8" stroke-width="140" stroke-linecap="round" opacity="0.16" fill="none"/>
+                        <path d="M0,920 Q450,960 350,1150 T550,1400 L0,1400 Z" fill="#1e293b"/>
+                        <path d="M350,1150 Q550,1250 550,1400 L800,1400 L800,920 Q450,960 350,1150 Z" fill="#292524"/>
+                        <circle cx="310" cy="210" r="2.5" fill="#fff"/><circle cx="440" cy="360" r="2" fill="#fff"/><circle cx="360" cy="510" r="3" fill="#fde68a"/><circle cx="520" cy="190" r="2" fill="#fff"/>
+                    </svg>`;
+
+                case 'golden_waves':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="gwSea" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#fbbf24"/><stop offset="22%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#091526"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#gwSea)"/>
+                        <ellipse cx="420" cy="700" rx="110" ry="480" fill="#f59e0b" opacity="0.28"/>
+                    </svg>`;
+
+                case 'tropical_cove':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="tcv" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#fdba74"/><stop offset="42%" stop-color="#bae6fd"/><stop offset="55%" stop-color="#0891b2"/><stop offset="82%" stop-color="#f5f5f4"/><stop offset="100%" stop-color="#e7e5e4"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#tcv)"/>
+                        <circle cx="410" cy="520" r="42" fill="#fffbeb"/>
+                    </svg>`;
+
+                // --- خلفيات أذكار متنوعة ---
+                case 'fluffy_clouds':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="fcSky" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#6495b8"/><stop offset="55%" stop-color="#b4d2e7"/><stop offset="100%" stop-color="#7c9eb2"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#fcSky)"/>
+                        <circle cx="420" cy="480" r="190" fill="#ffffff" opacity="0.55"/>
+                        <circle cx="280" cy="560" r="160" fill="#ffffff" opacity="0.45"/>
+                        <circle cx="540" cy="580" r="170" fill="#ffffff" opacity="0.5"/>
+                        <circle cx="380" cy="840" r="240" fill="#f1f5f9" opacity="0.45"/>
+                    </svg>`;
+
+                case 'twilight_shore':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="tsBg" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#787185"/><stop offset="48%" stop-color="#b89b9e"/><stop offset="50%" stop-color="#1e293b"/><stop offset="100%" stop-color="#0f172a"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#tsBg)"/>
+                        <path d="M0,1060 Q400,1010 800,1070 L800,1130 Q400,1080 0,1140 Z" fill="#e2e8f0" opacity="0.7"/>
+                    </svg>`;
+
+                case 'golden_summit':
+                    return `<svg class="w-full h-full object-cover" viewBox="0 0 800 1400" preserveAspectRatio="xMidYMid slice">
+                        <defs>
+                            <linearGradient id="gsBg" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e354d"/><stop offset="55%" stop-color="#486581"/><stop offset="100%" stop-color="#1f1610"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="1400" fill="url(#gsBg)"/>
+                        <polygon points="410,610 100,1400 720,1400" fill="#332216"/>
+                        <polygon points="410,610 230,1080 410,1140" fill="#f6ad55"/>
+                    </svg>`;
+
+                default:
+                    return `<div class="w-full h-full bg-gradient-to-b from-stone-900 via-amber-950 to-black"></div>`;
+            }
+        }
+
+        // محتوى البطاقات الافتراضية لكل دائرة من الدوائر الخمس
+        const DEFAULT_REELS_DATA = {
+            hamd: [
+                { id: 'h1', text: 'الْحَمْدُ لِلَّهِ', subtext: 'الحمد لله حمداً كثيراً طيباً مباركاً فيه', font: 'font-ruqaa', textColor: '#f5b971', bgType: 'moon_bridge' },
+                { id: 'h2', text: 'الْحَمْدُ لِلَّهِ', subtext: 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ', font: 'font-ruqaa', textColor: '#162419', bgType: 'misty_tree' },
+                { id: 'h3', text: 'الْحَمْدُ لِلَّهِ', subtext: 'الحمد لله على كل حال', font: 'font-ruqaa', textColor: '#22d3ee', bgType: 'sunrise_sea' },
+                { id: 'h4', text: 'الْحَمْدُ لِلَّهِ', subtext: 'الحمد لله الذي بنعمته تتم الصالحات', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'marble_dome' }
+            ],
+            hawqala: [
+                { id: 'hw1', text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', subtext: 'كنز من كنوز الجنة', font: 'font-ruqaa', textColor: '#f3b664', bgType: 'snow_mountains' },
+                { id: 'hw2', text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', subtext: 'كنزٌ من كنوز الجنة', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'sunset_horizon' },
+                { id: 'hw3', text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ', subtext: 'بها تُرفع الدرجات وتُفرَّج الكربات', font: 'font-amiri', textColor: '#ffffff', bgType: 'dark_highway' },
+                { id: 'hw4', text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', subtext: 'There is no power but from Allah', font: 'font-ruqaa', textColor: '#fbbf24', bgType: 'night_railway' }
+            ],
+            takbir: [
+                { id: 't1', text: 'اللَّهُ أَكْبَرُ', subtext: 'الله أكبر كبيراً، والحمد لله كثيراً', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'violet_peak' },
+                { id: 't2', text: 'اللَّهُ أَكْبَرُ', subtext: 'الله أكبر من كل همٍّ وغمٍّ', font: 'font-ruqaa', textColor: '#e2e8f0', bgType: 'starry_ridge' },
+                { id: 't3', text: 'اللَّهُ أَكْبَرُ', subtext: 'سبحان الله وبحمده، الله أكبر', font: 'font-amiri', textColor: '#ffffff', bgType: 'emerald_canyon' },
+                { id: 't4', text: 'اللَّهُ أَكْبَرُ', subtext: 'Allah is the Greatest', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'turquoise_cliff' }
+            ],
+            istighfar: [
+                { id: 'i1', text: 'أَسْتَغْفِرُ اللَّهَ', subtext: 'من لزم الاستغفار جعل الله له من كل همٍّ فرجاً', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'river_bridge' },
+                { id: 'i2', text: 'رَبِّ اغْفِرْ لِي', subtext: 'رب اغفر لي وتب علي إنك أنت التواب الرحيم', font: 'font-amiri', textColor: '#0369a1', bgType: 'calm_blue_sea' },
+                { id: 'i3', text: 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ', subtext: 'استغفر الله العظيم عدد خلقه ورضا نفسه', font: 'font-amiri', textColor: '#ffffff', bgType: 'milky_way_beach' },
+                { id: 'i4', text: 'أَسْتَغْفِرُ اللَّهَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ', subtext: 'غُفرت ذنوبه وإن كان قد فرّ من الزحف', font: 'font-amiri', textColor: '#ffffff', bgType: 'golden_waves' },
+                { id: 'i5', text: 'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ', subtext: 'طوبى لمن وجد في صحيفته استغفاراً كثيراً', font: 'font-amiri', textColor: '#ffffff', bgType: 'tropical_cove' }
+            ],
+            adhkar: [
+                { id: 'a1', text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ\nسُبْحَانَ اللَّهِ الْعَظِيمِ', subtext: 'كلمتان خفيفتان على اللسان ثقيلتان في الميزان', font: 'font-ruqaa', textColor: '#0f172a', bgType: 'fluffy_clouds' },
+                { id: 'a2', text: 'وَأُفَوِّضُ أَمْرِي إِلَى اللَّهِ', subtext: 'إِنَّ اللَّهَ بَصِيرٌ بِالْعِبَادِ', font: 'font-amiri', textColor: '#ffffff', bgType: 'twilight_shore' },
+                { id: 'a3', text: 'سُبْحَانَ اللَّهِ', subtext: 'تملأ ما بين السماء والأرض', font: 'font-ruqaa', textColor: '#ffffff', bgType: 'starry_ridge' },
+                { id: 'a4', text: 'لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ\nإِنِّي كُنْتُ مِنَ الظَّالِمِينَ', subtext: 'دعوة ذي النون ما دعا بها مسلم إلا استجاب الله له', font: 'font-amiri', textColor: '#fde68a', bgType: 'golden_summit' },
+                { id: 'a5', text: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ', subtext: 'كنز من كنوز الجنة', font: 'font-amiri', textColor: '#ffffff', bgType: 'dark_highway' }
+            ]
+        };
+
+        // =========================================================================
+        // 2. إدارة الحالة والتخزين المحلي (State & LocalStorage)
+        // =========================================================================
+        let counts = { hamd: 0, hawqala: 0, takbir: 0, istighfar: 0, adhkar: 0 };
+        let customSlides = { hamd: [], hawqala: [], takbir: [], istighfar: [], adhkar: [] };
+        let currentTheme = 'dark';
+        let activeCategory = null;
+        let currentSlideIndex = 0;
+
+        function initApp() {
+            // تحميل العدادات
+            try {
+                const savedCounts = JSON.parse(localStorage.getItem(STORAGE_COUNTS_KEY));
+                if (savedCounts) counts = { ...counts, ...savedCounts };
+            } catch (e) {}
+
+            // تحميل البطاقات المخصصة
+            try {
+                const savedSlides = JSON.parse(localStorage.getItem(STORAGE_CUSTOM_SLIDES_KEY));
+                if (savedSlides) customSlides = { ...customSlides, ...savedSlides };
+            } catch (e) {}
+
+            // تحميل الخلفية المخصصة للرئيسية
+            const savedHomeBg = localStorage.getItem(STORAGE_HOME_BG_KEY);
+            if (savedHomeBg) {
+                applyCustomHomeBg(savedHomeBg);
+            }
+
+            // تحميل المظهر
+            const savedTheme = localStorage.getItem(STORAGE_THEME_KEY) || 'dark';
+            setTheme(savedTheme, false);
+
+            updateAllBadges();
+            setupReelsGestures();
+            lucide.createIcons();
+        }
+
+        function saveCounts() {
+            localStorage.setItem(STORAGE_COUNTS_KEY, JSON.stringify(counts));
+            updateAllBadges();
+        }
+
+        function updateAllBadges() {
+            let total = 0;
+            Object.keys(CATEGORIES_META).forEach(key => {
+                const val = counts[key] || 0;
+                total += val;
+                const badgeEl = document.getElementById(`badge-${key}`);
+                if (badgeEl) badgeEl.textContent = val.toLocaleString('ar-EG');
+            });
+
+            const homeTotalEl = document.getElementById('home-total-count');
+            if (homeTotalEl) homeTotalEl.textContent = total.toLocaleString('ar-EG');
+
+            if (activeCategory) {
+                const reelCounterEl = document.getElementById('reels-counter-value');
+                if (reelCounterEl) reelCounterEl.textContent = (counts[activeCategory] || 0).toLocaleString('ar-EG');
+            }
+
+            renderDrawerStats();
+        }
+
+        // =========================================================================
+        // 3. المظهر (الوضع الداكن والمضيء المتناغم مع الخلفية)
+        // =========================================================================
+        function setTheme(theme, notify = true) {
+            currentTheme = theme;
+            localStorage.setItem(STORAGE_THEME_KEY, theme);
+
+            const body = document.body;
+            const skyRect = document.getElementById('home-sky-rect');
+            const overlayTint = document.getElementById('home-overlay-tint');
+            const drawer = document.getElementById('settings-drawer');
+            const darkBtn = document.getElementById('theme-dark-btn');
+            const lightBtn = document.getElementById('theme-light-btn');
+
+            if (theme === 'dark') {
+                body.classList.add('dark');
+                if (skyRect) skyRect.setAttribute('fill', 'url(#skyDark)');
+                if (overlayTint) overlayTint.className = 'absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70 transition-colors duration-500';
+                if (drawer) drawer.className = 'fixed top-0 right-0 z-50 h-full w-80 sm:w-96 max-w-[90vw] bg-[#1e1712] text-amber-50 border-l border-amber-500/20 shadow-2xl transform transition-transform duration-300 flex flex-col ' + (drawer.classList.contains('translate-x-full') ? 'translate-x-full' : 'translate-x-0');
+                
+                if (darkBtn && lightBtn) {
+                    darkBtn.className = 'flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-amber-700 text-white shadow transition';
+                    lightBtn.className = 'flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold opacity-75 hover:opacity-100 transition';
+                }
+            } else {
+                body.classList.remove('dark');
+                if (skyRect) skyRect.setAttribute('fill', 'url(#skyLight)');
+                if (overlayTint) overlayTint.className = 'absolute inset-0 bg-gradient-to-b from-amber-950/20 via-transparent to-stone-950/45 transition-colors duration-500';
+                if (drawer) drawer.className = 'fixed top-0 right-0 z-50 h-full w-80 sm:w-96 max-w-[90vw] bg-[#fbf5ee] text-stone-800 border-l border-amber-800/20 shadow-2xl transform transition-transform duration-300 flex flex-col ' + (drawer.classList.contains('translate-x-full') ? 'translate-x-full' : 'translate-x-0');
+
+                if (darkBtn && lightBtn) {
+                    lightBtn.className = 'flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-amber-600 text-white shadow transition';
+                    darkBtn.className = 'flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold opacity-75 hover:opacity-100 transition';
+                }
+            }
+
+            if (notify) showToast(theme === 'dark' ? 'تم تفعيل الوضع الداكن الهادئ' : 'تم تفعيل الوضع المضيء الدافئ');
+        }
+
+        // =========================================================================
+        // 4. نظام عرض الريلز والحلقة اللانهائية (Instagram Reels Infinite Loop)
+        // =========================================================================
+        function getSlidesForCategory(catKey) {
+            const base = DEFAULT_REELS_DATA[catKey] || [];
+            const custom = customSlides[catKey] || [];
+            return [...custom, ...base];
+        }
+
+        function openCategory(catKey) {
+            activeCategory = catKey;
+            currentSlideIndex = 0;
+
+            document.getElementById('reels-category-title').textContent = CATEGORIES_META[catKey].title;
+            document.getElementById('reels-counter-value').textContent = (counts[catKey] || 0).toLocaleString('ar-EG');
+
+            renderReelsStage();
+
+            const reelsView = document.getElementById('reels-view');
+            reelsView.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeReels() {
+            document.getElementById('reels-view').classList.add('hidden');
+            activeCategory = null;
+        }
+
+        function buildSlideHTML(slide, offsetPercent) {
+            const bgContent = slide.customImage 
+                ? `<img src="${slide.customImage}" alt="" class="w-full h-full object-cover">`
+                : createScenicArt(slide.bgType);
+
+            const textLines = (slide.text || '').split('\n').map(line => `<div>${line}</div>`).join('');
+
+            return `
+                <div class="reel-slide" style="transform: translateY(${offsetPercent}%);">
+                    <!-- خلفية البطاقة -->
+                    <div class="absolute inset-0 w-full h-full">
+                        ${bgContent}
+                    </div>
+                    
+                    <!-- تظليل خفيف لوضوح الخط العربي -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/55 pointer-events-none"></div>
+
+                    <!-- محتوى الذكر في المنتصف -->
+                    ${slide.text ? `
+                        <div class="relative z-10 w-full h-full flex flex-col items-center justify-center px-6 text-center pointer-events-none">
+                            <div class="${slide.font || 'font-amiri'} font-bold text-4xl sm:text-5xl md:text-6xl leading-snug drop-shadow-[0_4px_18px_rgba(0,0,0,0.75)]"
+                                 style="color: ${slide.textColor || '#ffffff'};">
+                                ${textLines}
+                            </div>
+                            ${slide.subtext ? `
+                                <p class="mt-5 max-w-md text-sm sm:text-base font-medium text-white/90 bg-black/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/15 shadow">
+                                    ${slide.subtext}
+                                </p>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderReelsStage() {
+            if (!activeCategory) return;
+            const slides = getSlidesForCategory(activeCategory);
+            const total = slides.length;
+            if (total === 0) return;
+
+            // حساب الفهرس السابق والحالي والتالي بنظام الحلقة اللانهائية (Loop)
+            const prevIdx = (currentSlideIndex - 1 + total) % total;
+            const currIdx = currentSlideIndex % total;
+            const nextIdx = (currentSlideIndex + 1) % total;
+
+            document.getElementById('reels-slide-indicator').textContent = `${currIdx + 1} / ${total}`;
+
+            const stage = document.getElementById('reels-stage');
+            stage.innerHTML = `
+                <div id="slide-prev">${buildSlideHTML(slides[prevIdx], -100)}</div>
+                <div id="slide-curr">${buildSlideHTML(slides[currIdx], 0)}</div>
+                <div id="slide-next">${buildSlideHTML(slides[nextIdx], 100)}</div>
+            `;
+        }
+
+        function incrementCurrentCounter() {
+            if (!activeCategory) return;
+            counts[activeCategory] = (counts[activeCategory] || 0) + 1;
+            saveCounts();
+
+            const box = document.getElementById('reels-counter-box');
+            box.classList.remove('counter-pop');
+            void box.offsetWidth; // إعادة تشغيل الأنيميشن
+            box.classList.add('counter-pop');
+        }
+
+        function navigateReel(direction) {
+            if (!activeCategory || isAnimatingReel) return;
+            const slides = getSlidesForCategory(activeCategory);
+            const total = slides.length;
+            if (total === 0) return;
+
+            isAnimatingReel = true;
+            const prevEl = document.querySelector('#slide-prev .reel-slide');
+            const currEl = document.querySelector('#slide-curr .reel-slide');
+            const nextEl = document.querySelector('#slide-next .reel-slide');
+
+            if (direction === 1) {
+                // التمرير للأعلى -> الانتقال للشريحة التالية + احتساب تسبيحة
+                if (currEl) currEl.style.transform = 'translateY(-100%)';
+                if (nextEl) nextEl.style.transform = 'translateY(0%)';
+                currentSlideIndex = (currentSlideIndex + 1) % total;
+                incrementCurrentCounter();
+            } else {
+                // التمرير للأسفل -> العودة للشريحة السابقة
+                if (currEl) currEl.style.transform = 'translateY(100%)';
+                if (prevEl) prevEl.style.transform = 'translateY(0%)';
+                currentSlideIndex = (currentSlideIndex - 1 + total) % total;
+                incrementCurrentCounter();
+            }
+
+            setTimeout(() => {
+                renderReelsStage();
+                isAnimatingReel = false;
+            }, 410);
+        }
+
+        // إعداد إيماءات السحب (Touch Swipe) والفأرة ولوحة المفاتيح للريلز
+        let isAnimatingReel = false;
+        function setupReelsGestures() {
+            const stage = document.getElementById('reels-stage');
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+            let startTime = 0;
+
+            stage.addEventListener('touchstart', (e) => {
+                if (isAnimatingReel) return;
+                startY = e.touches[0].clientY;
+                currentY = startY;
+                startTime = Date.now();
+                isDragging = true;
+
+                stage.querySelectorAll('.reel-slide').forEach(el => el.classList.add('dragging'));
+            }, { passive: true });
+
+            stage.addEventListener('touchmove', (e) => {
+                if (!isDragging || isAnimatingReel) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                const height = window.innerHeight;
+                const percent = (deltaY / height) * 100;
+
+                const prevEl = document.querySelector('#slide-prev .reel-slide');
+                const currEl = document.querySelector('#slide-curr .reel-slide');
+                const nextEl = document.querySelector('#slide-next .reel-slide');
+
+                if (prevEl) prevEl.style.transform = `translateY(${-100 + percent}%)`;
+                if (currEl) currEl.style.transform = `translateY(${percent}%)`;
+                if (nextEl) nextEl.style.transform = `translateY(${100 + percent}%)`;
+            }, { passive: true });
+
+            stage.addEventListener('touchend', (e) => {
+                if (!isDragging || isAnimatingReel) return;
+                isDragging = false;
+                const deltaY = currentY - startY;
+                const elapsed = Date.now() - startTime;
+
+                stage.querySelectorAll('.reel-slide').forEach(el => el.classList.remove('dragging'));
+
+                // إذا كانت حركة سحب واضحة للأعلى أو الأسفل
+                if (Math.abs(deltaY) > 55) {
+                    if (deltaY < 0) {
+                        navigateReel(1); // سحب للأعلى -> التالي
+                    } else {
+                        navigateReel(-1); // سحب للأسفل -> السابق
+                    }
+                } else {
+                    // إعادة الشرائح لمكانها، وإذا كانت نقرة سريعة نحتسب تسبيحة مع تموج
+                    const prevEl = document.querySelector('#slide-prev .reel-slide');
+                    const currEl = document.querySelector('#slide-curr .reel-slide');
+                    const nextEl = document.querySelector('#slide-next .reel-slide');
+                    if (prevEl) prevEl.style.transform = 'translateY(-100%)';
+                    if (currEl) currEl.style.transform = 'translateY(0%)';
+                    if (nextEl) nextEl.style.transform = 'translateY(100%)';
+
+                    if (Math.abs(deltaY) < 12 && elapsed < 300 && e.changedTouches[0]) {
+                        spawnTapRipple(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                        incrementCurrentCounter();
+                    }
+                }
+            });
+
+            // دعم النقر بالماوس على الشاشة للتسبيح
+            stage.addEventListener('click', (e) => {
+                if (!activeCategory) return;
+                spawnTapRipple(e.clientX, e.clientY);
+                incrementCurrentCounter();
+            });
+
+            // دعم عجلة الماوس (Wheel) على الحاسوب
+            let wheelLock = false;
+            stage.addEventListener('wheel', (e) => {
+                if (!activeCategory || wheelLock || isAnimatingReel) return;
+                if (Math.abs(e.deltaY) > 25) {
+                    wheelLock = true;
+                    navigateReel(e.deltaY > 0 ? 1 : -1);
+                    setTimeout(() => { wheelLock = false; }, 550);
+                }
+            }, { passive: true });
+
+            // دعم أسهم لوحة المفاتيح
+            window.addEventListener('keydown', (e) => {
+                if (!activeCategory) return;
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === ' ') {
+                    e.preventDefault();
+                    navigateReel(e.key === 'ArrowUp' ? -1 : 1);
+                } else if (e.key === 'Escape') {
+                    closeReels();
+                }
+            });
+        }
+
+        function spawnTapRipple(x, y) {
+            const stage = document.getElementById('reels-stage');
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-circle';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            stage.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 660);
+        }
+
+        // =========================================================================
+        // 5. قائمة الإعدادات ولوحة التحكم المدمجة (Drawer & Customization)
+        // =========================================================================
+        function toggleDrawer(open) {
+            const backdrop = document.getElementById('drawer-backdrop');
+            const drawer = document.getElementById('settings-drawer');
+
+            if (open) {
+                renderDrawerStats();
+                backdrop.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    backdrop.classList.remove('opacity-0');
+                    drawer.classList.remove('translate-x-full');
+                    drawer.classList.add('translate-x-0');
+                });
+            } else {
+                backdrop.classList.add('opacity-0');
+                drawer.classList.add('translate-x-full');
+                drawer.classList.remove('translate-x-0');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        }
+
+        function renderDrawerStats() {
+            const listEl = document.getElementById('drawer-stats-list');
+            if (!listEl) return;
+
+            listEl.innerHTML = Object.keys(CATEGORIES_META).map(key => `
+                <div class="flex items-center justify-between py-1.5 border-b border-amber-500/10 last:border-0">
+                    <span class="font-bold">${CATEGORIES_META[key].title}</span>
+                    <span class="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 font-extrabold">${(counts[key] || 0).toLocaleString('ar-EG')}</span>
+                </div>
+            `).join('');
+        }
+
+        function resetCurrentCategoryCounter() {
+            if (!activeCategory) return;
+            counts[activeCategory] = 0;
+            saveCounts();
+            showToast(`تم تصفير عداد "${CATEGORIES_META[activeCategory].title}"`);
+        }
+
+        function resetAllCounters() {
+            counts = { hamd: 0, hawqala: 0, takbir: 0, istighfar: 0, adhkar: 0 };
+            saveCounts();
+            showToast('تم تصفير جميع عدادات التسبيح');
+        }
+
+        // رفع خلفية مخصصة للصفحة الرئيسية
+        function uploadHomeBackground(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                try {
+                    localStorage.setItem(STORAGE_HOME_BG_KEY, dataUrl);
+                    applyCustomHomeBg(dataUrl);
+                    showToast('تم تحديث خلفية الصفحة الرئيسية بنجاح');
+                } catch (err) {
+                    showToast('حجم الصورة كبير للتخزين المحلي، جرب صورة أصغر');
+                }
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function applyCustomHomeBg(dataUrl) {
+            const img = document.getElementById('custom-home-bg-img');
+            const svg = document.getElementById('default-home-svg');
+            const resetBtn = document.getElementById('reset-home-bg-btn');
+            img.src = dataUrl;
+            img.classList.remove('hidden');
+            svg.classList.add('hidden');
+            resetBtn.classList.remove('hidden');
+        }
+
+        function resetHomeBackground() {
+            localStorage.removeItem(STORAGE_HOME_BG_KEY);
+            const img = document.getElementById('custom-home-bg-img');
+            const svg = document.getElementById('default-home-svg');
+            const resetBtn = document.getElementById('reset-home-bg-btn');
+            img.src = '';
+            img.classList.add('hidden');
+            svg.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+            showToast('تمت استعادة الخلفية التراثية الأصلية');
+        }
+
+        // إضافة بطاقة أو صورة مخصصة لأي دائرة
+        function addCustomReelSlide(event) {
+            event.preventDefault();
+            const cat = document.getElementById('custom-slide-cat').value;
+            const text = document.getElementById('custom-slide-text').value.trim();
+            const fileInput = document.getElementById('custom-slide-image');
+            const file = fileInput.files[0];
+
+            if (!text && !file) {
+                showToast('يرجى كتابة نص الذكر أو اختيار صورة');
+                return;
+            }
+
+            const finalizeAdd = (imageDataUrl = null) => {
+                const newSlide = {
+                    id: 'custom_' + Date.now(),
+                    text: text,
+                    subtext: '',
+                    font: 'font-amiri',
+                    textColor: '#ffffff',
+                    bgType: 'golden_summit',
+                    customImage: imageDataUrl
+                };
+
+                if (!customSlides[cat]) customSlides[cat] = [];
+                customSlides[cat].unshift(newSlide);
+
+                try {
+                    localStorage.setItem(STORAGE_CUSTOM_SLIDES_KEY, JSON.stringify(customSlides));
+                    document.getElementById('custom-slide-text').value = '';
+                    fileInput.value = '';
+                    showToast(`تمت الإضافة إلى دائرة "${CATEGORIES_META[cat].title}"`);
+                } catch (err) {
+                    customSlides[cat].shift();
+                    showToast('تعذر الحفظ لكبر حجم الصورة');
+                }
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => finalizeAdd(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                finalizeAdd(null);
+            }
+        }
+
+        // =========================================================================
+        // 6. التنبيهات المنبثقة (Toast)
+        // =========================================================================
+        let toastTimer;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 2800);
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
